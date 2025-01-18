@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-env --env-file=.env --allow-read --allow-net main.ts"
+  },
+  "imports": {
+    "discord.js": "npm:discord.js@^14.17.3"
+  },
+  "compilerOptions": {
+    "checkJs": true
+  }
+}

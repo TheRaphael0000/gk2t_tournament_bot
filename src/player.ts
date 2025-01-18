@@ -1,5 +1,6 @@
-import { Message } from "discord.js";
-import GameState from "./gamestate.js";
+import { Message } from "npm:discord.js";
+import GameState from "./gamestate.ts";
+import { sendHelp } from "./utils.ts";
 
 export default class Player {
   state: GameState;
@@ -7,16 +8,19 @@ export default class Player {
     this.state = state;
   }
 
-  onMessage(message: Message<boolean>) {
-    const user = message.author;
+  async onMessage(message: Message<boolean>) {
+    const author = message.author;
+    const content = message.content;
 
-    if (message.content.startsWith("!join")) {
-      this.state.players.push(user);
+    console.log(author.globalName, content);
+
+    if (content.startsWith("rejoindre")) {
+      if (!this.state.addPlayer(author)) author.send("Tu as déjà rejoint!");
+      else author.send(`Tu as rejoint le tournoi GK2T! Tu vas bientôt reçevoir plus d'informations`);
     }
 
-    if (message.content.startsWith("!players")) {
-      const players = this.state.players.map((p) => p.globalName).join("\n");
-      user.send(players);
+    if (content.startsWith("aide")) {
+      sendHelp(author);
     }
   }
 }

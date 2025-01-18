@@ -1,12 +1,9 @@
-import { Client, GatewayIntentBits, Message, Partials } from "discord.js";
-import dotenv from "dotenv";
-import GameState from "./gamestate.js";
-import Admin from "./admin.js";
-import Player from "./player.js";
+import { Client, GatewayIntentBits, Message, Partials } from "npm:discord.js";
+import GameState from "./src/gamestate.ts";
+import Admin from "./src/admin.ts";
+import Player from "./src/player.ts";
 
-dotenv.config();
-
-const admins = (process?.env?.ADMINS ?? "").split(",");
+const admins = (Deno.env.get("ADMINS") ?? "").split(",");
 
 const client = new Client({
   intents: [
@@ -30,20 +27,25 @@ function ready(client: Client<true>): void {
 }
 
 async function messageCreate(message: Message) {
-  if (message.author.bot) return; // no bot to bot
-  if (message.guildId != null) return; //dms onlyF
+  try {
+    if (message.author.bot) return; // no bot to bot
+    if (message.guildId != null) return; //dms onlyF
 
-  if (admins.includes(message.author.username)) adminHandler.onMessage(message);
+    if (admins.includes(message.author.username)) await adminHandler.onMessage(message);
 
-  playerHandler.onMessage(message);
+    await playerHandler.onMessage(message);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function main() {
-  await client.login(process.env.KEY);
+  await client.login();
 }
 
-process.on("SIGINT", async () => {
+Deno.addSignalListener("SIGINT", async () => {
   await client.destroy();
-  process.exit();
+  Deno.exit();
 });
+
 main();
