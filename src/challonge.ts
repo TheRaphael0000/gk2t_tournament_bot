@@ -1,7 +1,9 @@
 import { encodeBase64 } from "jsr:@std/encoding/base64";
 
 const endpoint = "https://api.challonge.com/v1";
-const token = encodeBase64(`${Deno.env.get("CHALLONGE_USER")}:${Deno.env.get("CHALLONGE_TOKEN")}`);
+const token = encodeBase64(
+  `${Deno.env.get("CHALLONGE_USER")}:${Deno.env.get("CHALLONGE_TOKEN")}`,
+);
 
 type AnyType = unknown;
 
@@ -62,7 +64,9 @@ export class Challonge {
   }
 
   async tournament() {
-    return (await this.query("GET", `/tournaments/${this.tournamentId}.json`)).tournament as Tournament;
+    return (
+      await this.query("GET", `/tournaments/${this.tournamentId}.json`)
+    ).tournament as Tournament;
   }
 
   async reset() {
@@ -94,7 +98,9 @@ export class Challonge {
 
   async participants() {
     const output = await this.query("GET", `/tournaments/${this.tournamentId}/participants.json`);
-    return output.map((p: { participant: Participant }) => p.participant as Participant) as Participant[];
+    return output.map(
+      (p: { participant: Participant }) => p.participant as Participant,
+    ) as Participant[];
   }
 
   async mark_as_underway(match_id: number) {

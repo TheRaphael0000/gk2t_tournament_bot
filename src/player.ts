@@ -14,18 +14,21 @@ export default class Player {
     if (content.startsWith("soumettre ")) {
       const data = message.content.replace(/^soumettre /g, "");
       this.state.submit(author, data);
-      author.send(`Soumissions enregistrée: ${this.state.submissions.get(author.id)?.toString()}`);
+      const soumissionStr = this.state.submissions.get(author.id)?.toString();
+      author.send(`Soumissions enregistrée: ${soumissionStr}`);
       return;
     }
 
     if (content == "rejoindre") {
-      if (!this.state.addPlayer(author)) author.send("Tu as déjà rejoint!");
-      else
+      if (!this.state.addPlayer(author)) {
+        author.send("Tu as déjà rejoint!");
+      } else {
         author.send(
           `Tu as rejoint le tournoi ${
             Deno.env.get("TOURNAMENT_NAME") ?? ""
-          }! Tu vas bientôt reçevoir plus d'informations`
+          }! Tu vas bientôt reçevoir plus d'informations`,
         );
+      }
     }
 
     if (content == "soumission") {
@@ -45,7 +48,8 @@ export default class Player {
     }
 
     if (content == "bracket") {
-      author.send(`${this.state.tournament?.full_challonge_url ?? ""}/module`);
+      const url = `${this.state.tournament?.full_challonge_url ?? ""}/module`;
+      author.send(url);
       return;
     }
 
@@ -59,7 +63,7 @@ export default class Player {
             - \`themes\`: Affiche la liste des thèmes possible actuel. Cette liste est mise à jour au fur et à mesure.
             - \`bracket\`: Retourne le lien du bracket.
             - \`aide\`: Affiche cette aide.
-            `
+            `,
       );
       return;
     }

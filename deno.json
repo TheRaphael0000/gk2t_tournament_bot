@@ -7,5 +7,12 @@
   },
   "compilerOptions": {
     "checkJs": true
+  },
+  "fmt": {
+    "semiColons": true,
+    "indentWidth": 2,
+    "useTabs": false,
+    "proseWrap": "never",
+    "lineWidth": 120
   }
 }

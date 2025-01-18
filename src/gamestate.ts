@@ -55,7 +55,10 @@ export default class GameState {
 
   submit(user: User, message: string) {
     const now = Date.now();
-    this.submissions.set(user.id, new Soumission(message, now - this.startTime, now));
+    this.submissions.set(
+      user.id,
+      new Soumission(message, now - this.startTime, now),
+    );
   }
 
   setTheme(themes: string[]) {

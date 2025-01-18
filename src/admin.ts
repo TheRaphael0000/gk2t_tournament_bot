@@ -45,7 +45,11 @@ export default class Admin {
     if (content.startsWith("soumissions")) {
       let output = "## Soumissions\n";
       for (const [key, submission] of this.state.submissions.entries()) {
-        output += `- [${timeFormat.format(submission.date)}] <@${key}> ${submission.toString()}\n`;
+        output += `- [${
+          timeFormat.format(
+            submission.date,
+          )
+        }] <@${key}> ${submission.toString()}\n`;
       }
       author.send(output);
       return;
@@ -56,7 +60,7 @@ export default class Admin {
         content
           .replace("set themes", "")
           .split("\n")
-          .map((r) => r.trim())
+          .map((r) => r.trim()),
       );
       this.state.showThemes(author);
       return;
@@ -76,16 +80,13 @@ export default class Admin {
     }
 
     if (content == "aide") {
-      author.send(
-        `## Commandes (Administrateur)
+      author.send(`## Commandes (Administrateur)
         - \`set themes <lines>\`: Pour chaque lines après cette commande (même message), ajoute un thème possible.
         - \`start\`: Utilise la liste des \`inscriptions\` pour créer le tournoi.
         - \`launch\`: Démarre tous les matches avec 2 joueurs, sans score et non démarré. Envoye un thème aléatoire à chaque joueurs.
         - \`soumissions\`: Affiche les soumissions des joueurs. Cette liste est effacé à chaque launch / relaunch
         - \`relaunch\`: Redémarre la manche, tous les matches avec 2 joueurs, sans score (uniquement en cas de problème).
-        - \`reset\`: Efface tous les résultats du tournoi.
-            `
-      );
+        - \`reset\`: Efface tous les résultats du tournoi.`);
       return;
     }
   }
@@ -109,13 +110,17 @@ export default class Admin {
 
         challonge.mark_as_underway(match.id);
         challonge.matchAttachments(match.id, theme);
-        const participant1 = participants.filter((p) => p.id == match.player1_id)[0];
-        const participant2 = participants.filter((p) => p.id == match.player2_id)[0];
+        const participant1 = participants.filter(
+          (p) => p.id == match.player1_id,
+        )[0];
+        const participant2 = participants.filter(
+          (p) => p.id == match.player2_id,
+        )[0];
 
         const discord1 = client.users.cache.get(participant1.misc);
         const discord2 = client.users.cache.get(participant2.misc);
         const VS_text = `<@${discord1?.id}> VS <@${discord2?.id}>`;
-        
+
         const message = `## Match
           ${VS_text}
           Thème: **${theme}**.

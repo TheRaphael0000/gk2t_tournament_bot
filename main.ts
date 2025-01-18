@@ -34,7 +34,9 @@ async function messageCreate(message: Message) {
     if (message.guildId != null) return; //dms onlyF
 
     console.log(message.author.globalName, message.content);
-    if (admins.includes(message.author.id)) await adminHandler.onMessage(message);
+    if (admins.includes(message.author.id)) {
+      await adminHandler.onMessage(message);
+    }
     await playerHandler.onMessage(message);
   } catch (e) {
     console.error(e);
