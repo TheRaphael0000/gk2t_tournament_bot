@@ -7,7 +7,7 @@ export default class Player {
     this.state = state;
   }
 
-  async onMessage(message: Message<boolean>) {
+  onMessage(message: Message<boolean>) {
     const author = message.author;
     const content = message.content;
 

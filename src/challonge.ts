@@ -3,6 +3,8 @@ import { encodeBase64 } from "jsr:@std/encoding/base64";
 const endpoint = "https://api.challonge.com/v1";
 const token = encodeBase64(`${Deno.env.get("CHALLONGE_USER")}:${Deno.env.get("CHALLONGE_TOKEN")}`);
 
+type AnyType = unknown;
+
 export interface ParticipantAdd {
   name: string;
   misc: string;
@@ -36,7 +38,7 @@ export class Challonge {
     this.tournamentId = tournamentId;
   }
 
-  async query(method: string, url: string, body?: any) {
+  async query(method: string, url: string, body?: AnyType) {
     console.log(method, url);
     if (body == undefined) body = {};
 
@@ -69,7 +71,7 @@ export class Challonge {
 
   async matches() {
     const output = await this.query("GET", `/tournaments/${this.tournamentId}/matches.json`);
-    return output.map((p: any) => p?.match as Match) as Match[];
+    return output.map((p: { match: Match }) => p?.match) as Match[];
   }
 
   async start() {
@@ -92,7 +94,7 @@ export class Challonge {
 
   async participants() {
     const output = await this.query("GET", `/tournaments/${this.tournamentId}/participants.json`);
-    return output.map((p: any) => p.participant as Participant) as Participant[];
+    return output.map((p: { participant: Participant }) => p.participant as Participant) as Participant[];
   }
 
   async mark_as_underway(match_id: number) {

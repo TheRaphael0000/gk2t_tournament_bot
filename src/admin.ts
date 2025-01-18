@@ -12,7 +12,6 @@ export default class Admin {
   async onMessage(message: Message<boolean>) {
     const author = message.author;
     const content = message.content;
-    const client = message.client;
 
     if (content.startsWith("reset")) {
       await challonge.reset();
