@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Message, Partials } from "npm:discord.js";
 import GameState from "./src/gamestate.ts";
 import Admin from "./src/admin.ts";
 import Player from "./src/player.ts";
+import challonge from "./src/challonge.ts";
 
 const admins = (Deno.env.get("ADMINS") ?? "").split(",");
 
@@ -16,6 +17,7 @@ const client = new Client({
 });
 
 const state = new GameState();
+
 const adminHandler = new Admin(state);
 const playerHandler = new Player(state);
 
@@ -31,8 +33,8 @@ async function messageCreate(message: Message) {
     if (message.author.bot) return; // no bot to bot
     if (message.guildId != null) return; //dms onlyF
 
-    if (admins.includes(message.author.username)) await adminHandler.onMessage(message);
-
+    console.log(message.author.globalName, message.content);
+    if (admins.includes(message.author.id)) await adminHandler.onMessage(message);
     await playerHandler.onMessage(message);
   } catch (e) {
     console.error(e);
@@ -41,6 +43,7 @@ async function messageCreate(message: Message) {
 
 async function main() {
   await client.login();
+  state.tournament = await challonge.tournament();
 }
 
 Deno.addSignalListener("SIGINT", async () => {

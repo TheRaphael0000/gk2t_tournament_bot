@@ -1,9 +1,7 @@
 import { Message, User } from "npm:discord.js";
 import GameState from "./gamestate.ts";
-import { Tournament, Participant } from "./challonge.ts";
-
-const tournamentId = Deno.env.get("CHALLONGE_TOURNAMENT") ?? "";
-const tournament = new Tournament(tournamentId);
+import { timeFormat } from "./formats.ts";
+import challonge from "./challonge.ts";
 
 export default class Admin {
   state: GameState;
@@ -14,39 +12,50 @@ export default class Admin {
   async onMessage(message: Message<boolean>) {
     const author = message.author;
     const content = message.content;
+    const client = message.client;
 
     if (content.startsWith("reset")) {
-      await tournament.reset();
-      await tournament.clearParticipants();
-    }
-
-    if (content.startsWith("start")) {
-      let players = this.state.players.map((p) => ({ name: p.globalName ?? "", misc: p.username } as Participant));
-      players.push({ name: "Test1", misc: "A" });
-      players.push({ name: "Test2", misc: "B" });
-      players.push({ name: "Test3", misc: "C" });
-      players.push({ name: "Test4", misc: "D" });
-      console.log(players);
-      await tournament.addParticipants(players);
-      await tournament.randomizeParticipants();
-      await tournament.start();
-    }
-
-    if (content.startsWith("matches")) {
-      const output = await tournament.matches();
-      console.log(output);
-      author.send("Matches");
-    }
-
-    if (content.startsWith("themes clear")) {
-      this.state.themes = [];
+      await challonge.reset();
+      await challonge.clearParticipants();
+      author.send(`Tournoi reseté!`);
       return;
     }
 
-    if (content.startsWith("+themes")) {
-      this.state.addTheme(
+    if (content.startsWith("start")) {
+      const players = this.state.players;
+      console.log("adding", players);
+
+      await challonge.addParticipants(players);
+      await challonge.randomizeParticipants();
+      await challonge.start();
+      const participants = await challonge.participants();
+      author.send(`Tournoi démarré avec ${participants.length} joueurs`);
+      return;
+    }
+
+    if (content.startsWith("launch")) {
+      await this.launch(author, false);
+      return;
+    }
+
+    if (content.startsWith("relaunch")) {
+      await this.launch(author, true);
+      return;
+    }
+
+    if (content.startsWith("soumissions")) {
+      let output = "## Soumissions\n";
+      for (const [key, submission] of this.state.submissions.entries()) {
+        output += `- [${timeFormat.format(submission.date)}] <@${key}> ${submission.toString()}\n`;
+      }
+      author.send(output);
+      return;
+    }
+
+    if (content.startsWith("set themes")) {
+      this.state.setTheme(
         content
-          .replace("+themes", "")
+          .replace("set themes", "")
           .split("\n")
           .map((r) => r.trim())
       );
@@ -54,26 +63,73 @@ export default class Admin {
       return;
     }
 
-    if (content.startsWith("-themes")) {
-      this.state.removeTheme(
-        content
-          .replace("-themes", "")
-          .split(/[\s\\n]/g)
-          .map((r) => r.trim())
-          .map((r) => parseInt(r))
+    /// debug commands
+    if (content == "participants") {
+      const participants = await challonge.participants();
+      console.log(participants);
+      return;
+    }
+
+    if (content == "matches") {
+      const matches = await challonge.matches();
+      console.log(matches);
+      return;
+    }
+
+    if (content == "aide") {
+      author.send(
+        `## Commandes (Administrateur)
+        - \`set themes <lines>\`: Pour chaque lines après cette commande (même message), ajoute un thème possible.
+        - \`start\`: Utilise la liste des \`inscriptions\` pour créer le tournoi.
+        - \`launch\`: Démarre tous les matches avec 2 joueurs, sans score et non démarré. Envoye un thème aléatoire à chaque joueurs.
+        - \`soumissions\`: Affiche les soumissions des joueurs. Cette liste est effacé à chaque launch / relaunch
+        - \`relaunch\`: Redémarre la manche, tous les matches avec 2 joueurs, sans score (uniquement en cas de problème).
+        - \`reset\`: Efface tous les résultats du tournoi.
+            `
       );
-      this.state.showThemes(author);
       return;
+    }
+  }
+
+  async launch(author: User, relaunch: boolean) {
+    const client = author.client;
+
+    let matches = await challonge.matches();
+    matches = matches.filter((m) => m.state == "open");
+    // const minRound = Math.min(...matches.map((m) => m.round));
+    // matches = matches.filter((m) => m.round == minRound);
+    if (!relaunch) matches = matches.filter((m) => m.underway_at == null);
+
+    let output = `## Matches démarrés (${matches.length})\n`;
+
+    if (matches.length > 0) {
+      const participants = await challonge.participants();
+
+      for (const match of matches) {
+        const theme = this.state.getRandomTheme();
+
+        challonge.mark_as_underway(match.id);
+        challonge.matchAttachments(match.id, theme);
+        const participant1 = participants.filter((p) => p.id == match.player1_id)[0];
+        const participant2 = participants.filter((p) => p.id == match.player2_id)[0];
+
+        const discord1 = client.users.cache.get(participant1.misc);
+        const discord2 = client.users.cache.get(participant2.misc);
+        const VS_text = `<@${discord1?.id}> VS <@${discord2?.id}>`;
+        
+        const message = `## Match
+          ${VS_text}
+          Thème: **${theme}**.
+          Bonne chance!`;
+
+        discord1?.send(message);
+        discord2?.send(message);
+
+        output += `- **${theme}** : ${VS_text}\n`;
+      }
     }
 
-    if (content.startsWith("themes")) {
-      this.state.showThemes(author);
-      return;
-    }
-
-    if (content.startsWith("joueurs")) {
-      this.state.showPlayers(author);
-      return;
-    }
+    this.state.startTime = Date.now();
+    author.send(output);
   }
 }
