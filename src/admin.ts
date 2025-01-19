@@ -16,6 +16,7 @@ export default class Admin {
     if (content == "reset") {
       await challonge.reset();
       await challonge.clearParticipants();
+      this.state.submissions.clear();
       author.send(`## Reset\nTournament reset!`);
       return;
     }
@@ -25,6 +26,7 @@ export default class Admin {
       await challonge.addParticipants(players);
       await challonge.randomizeParticipants();
       await challonge.start();
+      this.state.submissions.clear();
       const participants = await challonge.participants();
       let output = `## Start\n`;
       output += `Tournament started with ${participants.length} players\n`;
@@ -146,7 +148,6 @@ export default class Admin {
 
     if (matches.length > 0) {
       const participants = await challonge.participants();
-      this.state.submissions.clear();
 
       for (const match of matches) {
         const theme = this.state.getRandomTheme();
@@ -162,6 +163,9 @@ export default class Admin {
 
         const participant1 = participants.filter((p) => p.id == match.player1_id)[0];
         const participant2 = participants.filter((p) => p.id == match.player2_id)[0];
+
+        this.state.submissions.delete(participant1.misc);
+        this.state.submissions.delete(participant2.misc);
 
         const discord1 = client.users.cache.get(participant1.misc);
         const discord2 = client.users.cache.get(participant2.misc);
