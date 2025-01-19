@@ -11,17 +11,9 @@ export default class Player {
     const author = message.author;
     const content = message.content;
 
-    if (content.startsWith("soumettre ")) {
-      const data = message.content.replace(/^soumettre /g, "");
-      this.state.submit(author, data);
-      const soumissionStr = this.state.submissions.get(author.id)?.toString() ?? "PAS DE SOUMISSION!";
-      author.send(`Soumissions enregistrée: ${soumissionStr}`);
-      return;
-    }
-
-    if (content == "rejoindre") {
+    if (content == "join") {
       if (!this.state.addPlayer(author)) {
-        author.send("Tu as déjà rejoint!");
+        author.send("Tu as déjà rejoint le tournoi!");
       } else {
         author.send(
           `Tu as rejoint le tournoi ${
@@ -31,39 +23,32 @@ export default class Player {
       }
     }
 
-    if (content == "soumission") {
+    if (content.startsWith("submit ")) {
+      const data = message.content.replace(/^submit /g, "");
+      if (data.length > 100) {
+        author.send("Trop long!");
+        return;
+      }
+      this.state.submit(author, data);
+      const submissionStr = this.state.submissions.get(author.id)?.toString() ?? "PAS DE SOUMISSION!";
+      author.send(`Soumission enregistrée: ${submissionStr}`);
+      return;
+    }
+
+    if (content == "submit") {
       const submission = this.state.submissions.get(author.id);
       author.send(`Ta dernière soumission est: ${submission?.toString() ?? "PAS DE SOUMISSION!"}`);
       return;
     }
 
-    if (content == "inscriptions") {
-      this.state.showPlayers(author);
-      return;
-    }
-
-    if (content == "themes") {
-      this.state.showThemes(author);
-      return;
-    }
-
-    if (content == "bracket") {
-      const url = `${this.state.tournament?.full_challonge_url ?? ""}/module`;
-      author.send(url);
-      return;
-    }
-
-    if (content == "aide") {
+    if (content == "help") {
       author.send(
         `## Commandes (Joueur)
-            - \`rejoindre\` Rejoindre le tournoi ${Deno.env.get("TOURNAMENT_NAME")}.
-            - \`soumettre <lien>\`: Envoyer une musique.
-            - \`soumission\`: Affiche la dernière musique envoyé (celle qui va être jugé).
-            - \`inscriptions\`: Affiche les joueurs inscrit.
-            - \`themes\`: Affiche la liste des thèmes possible actuel. Cette liste est mise à jour au fur et à mesure.
-            - \`bracket\`: Retourne le lien du bracket.
-            - \`aide\`: Affiche cette aide.
-            > Sources: github.com/TheRaphael0000/gk2t_tournament_bot
+            - \`join\` Rejoindre le tournoi ${Deno.env.get("TOURNAMENT_NAME")}.
+            - \`submit <lien>\`: Envoyer une musique.
+            - \`submit\`: Affiche la dernière musique envoyé (celle qui va être jugé).
+            - \`help\`: Affiche cette aide.
+            > Code source: github.com/TheRaphael0000/gk2t_tournament_bot
             `,
       );
       return;
