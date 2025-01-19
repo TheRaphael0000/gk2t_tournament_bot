@@ -1,4 +1,6 @@
 import { encodeBase64 } from "jsr:@std/encoding/base64";
+import { Attachment } from "discord.js";
+import { logger } from "./utils.ts";
 
 const endpoint = "https://api.challonge.com/v1";
 const token = encodeBase64(
@@ -34,6 +36,11 @@ export interface Match {
   underway_at: string;
 }
 
+export interface Attachement {
+  id: number;
+  description: string;
+}
+
 export class Challonge {
   tournamentId: string;
   constructor(tournamentId: string) {
@@ -41,7 +48,7 @@ export class Challonge {
   }
 
   async query(method: string, url: string, body?: AnyType) {
-    console.log(method, url);
+    logger(`${method} ${url}`);
     if (body == undefined) body = {};
 
     const response = await fetch(`${endpoint}${url}`, {
@@ -98,21 +105,22 @@ export class Challonge {
 
   async participants() {
     const output = await this.query("GET", `/tournaments/${this.tournamentId}/participants.json`);
-    return output.map(
-      (p: { participant: Participant }) => p.participant as Participant,
-    ) as Participant[];
+    return output.map((p: { participant: Participant }) => p.participant) as Participant[];
   }
 
   async mark_as_underway(match_id: number) {
     return await this.query("POST", `/tournaments/${this.tournamentId}/matches/${match_id}/mark_as_underway.json`);
   }
 
-  async matchAttachments(match_id: number, description: string) {
+  async setMatchAttachments(match_id: number, description: string) {
     return await this.query("POST", `/tournaments/${this.tournamentId}/matches/${match_id}/attachments.json`, {
-      match_attachment: {
-        description: description,
-      },
+      description: description,
     });
+  }
+
+  async getMatchAttachments(match_id: number) {
+    const output = await this.query("GET", `/tournaments/${this.tournamentId}/matches/${match_id}/attachments.json`);
+    return output.map((a: { match_attachment: Attachment }) => a.match_attachment) as Attachement[];
   }
 }
 

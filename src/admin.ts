@@ -1,6 +1,5 @@
 import { Message, User } from "npm:discord.js";
 import GameState from "./gamestate.ts";
-import { timeFormat } from "./formats.ts";
 import challonge from "./challonge.ts";
 
 export default class Admin {
@@ -22,8 +21,6 @@ export default class Admin {
 
     if (content.startsWith("start")) {
       const players = this.state.players;
-      console.log("adding", players);
-
       await challonge.addParticipants(players);
       await challonge.randomizeParticipants();
       await challonge.start();
@@ -43,13 +40,21 @@ export default class Admin {
     }
 
     if (content.startsWith("soumissions")) {
+      const matches = await this.openMatches(true);
+      const participants = await challonge.participants();
+
       let output = "## Soumissions\n";
-      for (const [key, submission] of this.state.submissions.entries()) {
-        output += `- [${
-          timeFormat.format(
-            submission.date,
-          )
-        }] <@${key}> ${submission.toString()}\n`;
+      for (const match of matches) {
+        const attachements = await challonge.getMatchAttachments(match.id);
+        const theme = attachements.at(attachements.length - 1)?.description ?? "NO THEME";
+        const participant1 = participants.filter((p) => p.id == match.player1_id)[0];
+        const participant2 = participants.filter((p) => p.id == match.player2_id)[0];
+        const submission1 = this.state.submissions.get(participant1.misc);
+        const submission2 = this.state.submissions.get(participant2.misc);
+
+        output += `- Match: ${match.identifier}: **${theme}**\n`;
+        output += `  - <@${participant1.misc}>: ${submission1?.toString() ?? "PAS DE SOUMISSION!"}\n`;
+        output += `  - <@${participant2.misc}>: ${submission2?.toString() ?? "PAS DE SOUMISSION!"}\n`;
       }
       author.send(output);
       return;
@@ -69,13 +74,13 @@ export default class Admin {
     /// debug commands
     if (content == "participants") {
       const participants = await challonge.participants();
-      console.log(participants);
+      console.debug(participants);
       return;
     }
 
     if (content == "matches") {
       const matches = await challonge.matches();
-      console.log(matches);
+      console.debug(matches);
       return;
     }
 
@@ -91,14 +96,19 @@ export default class Admin {
     }
   }
 
-  async launch(author: User, relaunch: boolean) {
-    const client = author.client;
-
+  async openMatches(includeStarted: boolean) {
     let matches = await challonge.matches();
     matches = matches.filter((m) => m.state == "open");
     // const minRound = Math.min(...matches.map((m) => m.round));
     // matches = matches.filter((m) => m.round == minRound);
-    if (!relaunch) matches = matches.filter((m) => m.underway_at == null);
+    if (!includeStarted) matches = matches.filter((m) => m.underway_at == null);
+    return matches;
+  }
+
+  async launch(author: User, includeStarted: boolean) {
+    const client = author.client;
+
+    const matches = await this.openMatches(includeStarted);
 
     let output = `## Matches démarrés (${matches.length})\n`;
 
@@ -109,13 +119,16 @@ export default class Admin {
         const theme = this.state.getRandomTheme();
 
         challonge.mark_as_underway(match.id);
-        challonge.matchAttachments(match.id, theme);
-        const participant1 = participants.filter(
-          (p) => p.id == match.player1_id,
-        )[0];
-        const participant2 = participants.filter(
-          (p) => p.id == match.player2_id,
-        )[0];
+
+        if (theme == undefined) {
+          author.send("Not themes found!");
+          return;
+        }
+
+        await challonge.setMatchAttachments(match.id, theme);
+
+        const participant1 = participants.filter((p) => p.id == match.player1_id)[0];
+        const participant2 = participants.filter((p) => p.id == match.player2_id)[0];
 
         const discord1 = client.users.cache.get(participant1.misc);
         const discord2 = client.users.cache.get(participant2.misc);

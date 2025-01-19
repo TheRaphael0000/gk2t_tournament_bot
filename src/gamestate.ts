@@ -13,7 +13,7 @@ export class Soumission {
   }
 
   toString() {
-    return `${this.message} (${this.delta / 1000} seconds après le début du round)`;
+    return `<${this.message}> (${this.delta / 1000} seconds après le début du round)`;
   }
 }
 
@@ -26,28 +26,28 @@ export default class GameState {
 
   constructor() {
     this.players = [
-      // { name: "Test1", misc: "239330945826684929" },
-      // { name: "Test2", misc: "239330945826684929" },
-      // { name: "Test3", misc: "239330945826684929" },
-      // { name: "Test4", misc: "239330945826684929" },
-      // { name: "Test5", misc: "239330945826684929" },
-      // { name: "Test6", misc: "239330945826684929" },
-      // { name: "Test7", misc: "239330945826684929" },
-      // { name: "Test8", misc: "239330945826684929" },
-      // { name: "Test9", misc: "239330945826684929" },
-      // { name: "Test10", misc: "239330945826684929" },
+      { name: "Test1", misc: "239330945826684929" },
+      { name: "Test2", misc: "239330945826684929" },
+      { name: "Test3", misc: "239330945826684929" },
+      { name: "Test4", misc: "239330945826684929" },
+      { name: "Test5", misc: "239330945826684929" },
+      { name: "Test6", misc: "239330945826684929" },
+      { name: "Test7", misc: "239330945826684929" },
+      { name: "Test8", misc: "239330945826684929" },
+      { name: "Test9", misc: "239330945826684929" },
+      { name: "Test10", misc: "239330945826684929" },
     ];
     this.themes = [
-      // "Theme 1",
-      // "Theme 2",
-      // "Theme 3",
-      // "Theme 4",
-      // "Theme 5",
-      // "Theme 6",
-      // "Theme 7",
-      // "Theme 8",
-      // "Theme 9",
-      // "Theme 10",
+      "Theme 1",
+      "Theme 2",
+      "Theme 3",
+      "Theme 4",
+      "Theme 5",
+      "Theme 6",
+      "Theme 7",
+      "Theme 8",
+      "Theme 9",
+      "Theme 10",
     ];
     this.submissions = new Map<string, Soumission>(); // key: discord id
     this.startTime = Date.now();
@@ -62,7 +62,6 @@ export default class GameState {
   }
 
   setTheme(themes: string[]) {
-    console.log(themes);
     this.themes = [];
     for (let i = 0; i < themes.length; i++) {
       const theme = themes[i];

@@ -14,7 +14,7 @@ export default class Player {
     if (content.startsWith("soumettre ")) {
       const data = message.content.replace(/^soumettre /g, "");
       this.state.submit(author, data);
-      const soumissionStr = this.state.submissions.get(author.id)?.toString();
+      const soumissionStr = this.state.submissions.get(author.id)?.toString() ?? "PAS DE SOUMISSION!";
       author.send(`Soumissions enregistrée: ${soumissionStr}`);
       return;
     }
@@ -33,7 +33,7 @@ export default class Player {
 
     if (content == "soumission") {
       const submission = this.state.submissions.get(author.id);
-      author.send(`Ta dernière soumission est: ${submission?.toString() ?? ""}`);
+      author.send(`Ta dernière soumission est: ${submission?.toString() ?? "PAS DE SOUMISSION!"}`);
       return;
     }
 
@@ -63,6 +63,7 @@ export default class Player {
             - \`themes\`: Affiche la liste des thèmes possible actuel. Cette liste est mise à jour au fur et à mesure.
             - \`bracket\`: Retourne le lien du bracket.
             - \`aide\`: Affiche cette aide.
+            > Sources: github.com/TheRaphael0000/gk2t_tournament_bot
             `,
       );
       return;
