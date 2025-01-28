@@ -1,15 +1,7 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@std/encoding@*": "1.0.6",
-    "npm:@types/node@*": "22.5.4",
-    "npm:discord.js@*": "14.17.3",
     "npm:discord.js@^14.17.3": "14.17.3"
-  },
-  "jsr": {
-    "@std/encoding@1.0.6": {
-      "integrity": "ca87122c196e8831737d9547acf001766618e78cd8c33920776c7f5885546069"
-    }
   },
   "npm": {
     "@discordjs/builders@1.10.0": {

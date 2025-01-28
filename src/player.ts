@@ -1,5 +1,6 @@
 import { Message } from "npm:discord.js";
 import GameState from "./gamestate.ts";
+import { commandParser } from "./utils.ts";
 
 export default class Player {
   state: GameState;
@@ -11,7 +12,7 @@ export default class Player {
     const author = message.author;
     const content = message.content;
 
-    if (content == "join") {
+    if (commandParser(content, "join")) {
       if (!this.state.addPlayer(author)) {
         author.send("Tu as déjà rejoint le tournoi!");
       } else {
@@ -23,7 +24,7 @@ export default class Player {
       }
     }
 
-    if (content.startsWith("submit ")) {
+    if (commandParser(content, "submit")) {
       const data = message.content.replace(/^submit /g, "");
       if (data.length > 100) {
         author.send("Trop long!");
@@ -35,13 +36,7 @@ export default class Player {
       return;
     }
 
-    if (content == "submit") {
-      const submission = this.state.submissions.get(author.id);
-      author.send(`Ta dernière soumission est: ${submission?.toString() ?? "PAS DE SOUMISSION!"}`);
-      return;
-    }
-
-    if (content == "help") {
+    if (commandParser(content, "help")) {
       author.send(
         `## Commandes (Joueur)
             - \`join\` Rejoindre le tournoi ${Deno.env.get("TOURNAMENT_NAME")}.

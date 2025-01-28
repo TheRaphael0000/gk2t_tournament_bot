@@ -1,9 +1,9 @@
 import { Client, GatewayIntentBits, Message, Partials } from "npm:discord.js";
-import GameState from "./src/gamestate.ts";
-import Admin from "./src/admin.ts";
-import Player from "./src/player.ts";
-import challonge from "./src/challonge.ts";
-import { logger } from "./src/utils.ts";
+import GameState from "./gamestate.ts";
+import Admin from "./admin.ts";
+import Player from "./player.ts";
+import challonge from "./challonge.ts";
+import { logger } from "./utils.ts";
 
 const admins = (Deno.env.get("ADMINS") ?? "").split(",");
 

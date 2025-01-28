@@ -29,7 +29,7 @@ export default class GameState {
     this.themes = [];
     this.submissions = new Map<string, Submission>(); // key: discord id
     this.startTime = Date.now();
-    if (Boolean(Deno.env.get("DEBUG")) === true) this.loadDebugValues();
+    if (Deno.env.get("DEBUG") === "true") this.loadDebugValues();
   }
 
   loadDebugValues() {
@@ -88,7 +88,7 @@ export default class GameState {
     if (playersId.includes(id)) {
       return false;
     }
-    this.players.push({ name: user.globalName ?? "", misc: id });
+    this.players.push({ name: user.globalName ?? user.displayName, misc: id });
     return true;
   }
 

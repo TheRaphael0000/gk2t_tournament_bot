@@ -27,6 +27,11 @@ export function messageBuilder(blocks: string[], header: string, footer: string,
   return fusedBlocks;
 }
 
+export function commandParser(input: string, command: string) {
+  const temp = input.split(" ").at(0)?.toLowerCase()?.replaceAll(/[^0-9a-z_]/g, "") ?? "";
+  return temp.startsWith(command);
+}
+
 // for (let i of [5, 6, 7, 8, 9, 10, 11, 12, 13]) {
 //   console.log(i, messageBuilder(["ABC", "DEF", "GHI"], "h ", " f", i));
 // }

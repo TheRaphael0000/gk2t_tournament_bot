@@ -1,7 +1,7 @@
 import { Message, User } from "npm:discord.js";
 import GameState from "./gamestate.ts";
 import challonge from "./challonge.ts";
-import { messageBuilder } from "./utils.ts";
+import { commandParser, messageBuilder } from "./utils.ts";
 
 export default class Admin {
   state: GameState;
@@ -13,7 +13,7 @@ export default class Admin {
     const author = message.author;
     const content = message.content;
 
-    if (content == "reset") {
+    if (commandParser(content, "reset")) {
       await challonge.reset();
       await challonge.clearParticipants();
       this.state.submissions.clear();
@@ -21,7 +21,7 @@ export default class Admin {
       return;
     }
 
-    if (content == "start") {
+    if (commandParser(content, "start")) {
       const players = this.state.players;
       await challonge.addParticipants(players);
       await challonge.randomizeParticipants();
@@ -38,17 +38,12 @@ export default class Admin {
       return;
     }
 
-    if (content == "launch") {
+    if (commandParser(content, "launch")) {
       await this.launch(author, true);
       return;
     }
 
-    if (content == "relaunch") {
-      await this.launch(author, false);
-      return;
-    }
-
-    if (content == "submissions") {
+    if (commandParser(content, "submissions")) {
       const matches = await this.openMatches(false);
       const participants = await challonge.participants();
 
@@ -75,10 +70,10 @@ export default class Admin {
       return;
     }
 
-    if (content.startsWith("set themes")) {
+    if (commandParser(content, "set_themes")) {
       this.state.setTheme(
         content
-          .replace("set themes", "")
+          .replace("set_themes", "")
           .split("\n")
           .map((r) => r.trim()),
       );
@@ -86,46 +81,45 @@ export default class Admin {
       return;
     }
 
-    if (content == "help") {
-      author.send(`## Commands (Administrators)
-        - \`set themes <lines>\`: Pour chaque lines après cette commande (même message), ajoute un thème possible.
-        - \`themes\`: Affiche la liste des thèmes possible actuel. Cette liste est mise à jour au fur et à mesure.
-        - \`registrations\`: Affiche les joueurs inscrit.
-        - \`start\`: Utilise la liste des \`inscriptions\` pour créer le tournoi.
-        - \`launch\`: Démarre tous les matches avec 2 joueurs, sans score et non démarré. Envoye un thème aléatoire à chaque joueurs.
-        - \`submissions\`: Affiche les soumissions des joueurs. Cette liste est effacé à chaque launch / relaunch
-        - \`relaunch\`: Redémarre la manche, tous les matches avec 2 joueurs, sans score (uniquement en cas de problème).
-        - \`bracket\`: Retourne le lien du bracket.
-        - \`reset\`: Efface tous les résultats du tournoi.`);
-      return;
-    }
-
-    if (content == "registrations") {
+    if (commandParser(content, "registrations")) {
       this.state.showPlayers(author);
       return;
     }
 
-    if (content == "themes") {
+    if (commandParser(content, "themes")) {
       this.state.showThemes(author);
       return;
     }
 
-    if (content == "bracket") {
+    if (commandParser(content, "bracket")) {
       const url = `${this.state.tournament?.full_challonge_url ?? ""}/module`;
       author.send(url);
       return;
     }
 
     /// debug commands
-    if (content == "participants") {
+    if (commandParser(content, "participants")) {
       const participants = await challonge.participants();
       console.debug(participants);
       return;
     }
 
-    if (content == "matches") {
+    if (commandParser(content, "matches")) {
       const matches = await challonge.matches();
       console.debug(matches);
+      return;
+    }
+
+    if (commandParser(content, "help")) {
+      author.send(`## Commands (Administrators)
+        - \`set_themes <lines>\`: Pour chaque lines après cette commande (même message), ajoute un thème possible.
+        - \`themes\`: Affiche la liste des thèmes possible actuel. Cette liste est mise à jour au fur et à mesure.
+        - \`registrations\`: Affiche les joueurs inscrit.
+        - \`start\`: Utilise la liste des \`inscriptions\` pour créer le tournoi.
+        - \`launch\`: Démarre tous les matches avec 2 joueurs, sans score et non démarré. Envoye un thème aléatoire à chaque joueurs.
+        - \`submissions\`: Affiche les soumissions des joueurs. Cette liste est effacé à chaque launch / relaunch
+        - \`bracket\`: Retourne le lien du bracket.
+        - \`reset\`: Efface tous les résultats du tournoi.`);
       return;
     }
   }
